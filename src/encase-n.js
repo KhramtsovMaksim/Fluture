@@ -27,7 +27,7 @@ EncaseN.prototype._interpret = function EncaseN$interpret(rec, rej, res){
       }
     });
   }catch(e){
-    rec(someError('Future.encaseN was executing its operation', e));
+    rec(someError('Future.encaseN was executing its operation', e, null, EncaseN$interpret));
     open = false;
     return noop;
   }

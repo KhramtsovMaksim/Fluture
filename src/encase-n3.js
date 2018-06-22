@@ -29,7 +29,7 @@ EncaseN3.prototype._interpret = function EncaseN3$interpret(rec, rej, res){
       }
     });
   }catch(e){
-    rec(someError('Future.encaseN3 was executing its operation', e));
+    rec(someError('Future.encaseN3 was executing its operation', e, null, EncaseN3$interpret));
     open = false;
     return noop;
   }

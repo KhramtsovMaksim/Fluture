@@ -28,11 +28,14 @@ EncaseP3.prototype._interpret = function EncaseP3$interpret(rec, rej, res){
   try{
     p = fn(a, b, c);
   }catch(e){
-    rec(someError('Future.encaseP3 was generating its Promise', e));
+    rec(someError('Future.encaseP3 was generating its Promise', e, null, EncaseP3$interpret));
     return noop;
   }
   if(!isThenable(p)){
-    rec(someError('Future.encaseP3 was generating its Promise', invalidPromise(p, fn, a, b, c)));
+    rec(someError(
+      'Future.encaseP3 was generating its Promise',
+      invalidPromise(p, fn, a, b, c), null, EncaseP3$interpret
+    ));
     return noop;
   }
   p.then(function EncaseP3$res(x){

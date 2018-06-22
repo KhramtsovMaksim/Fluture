@@ -264,14 +264,14 @@ Computation.prototype._interpret = function Computation$interpret(rec, rej, res)
     }) || noop;
   }catch(e){
     open = false;
-    rec(someError('Future was running its computation', e, show(this)));
+    rec(someError('Future was running its computation', e, show(this), Computation$interpret));
     return noop;
   }
   if(!(isFunction(cancel) && cancel.length === 0)){
     rec(someError('Future ran its computation', typeError(
       'The computation was expected to return a nullary function or void\n' +
       '  Actual: ' + show(cancel)
-    ), show(this)));
+    ), show(this), Computation$interpret));
   }
   cont();
   return function Computation$cancel(){

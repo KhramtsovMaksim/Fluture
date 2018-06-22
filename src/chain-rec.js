@@ -29,7 +29,7 @@ ChainRec.prototype._interpret = function ChainRec$interpret(rec, rej, res){
       try{
         var m = _step(Next, Done, state.value);
       }catch(e){
-        rec(someError('Future.chainRec was calling its iterator', e));
+        rec(someError('Future.chainRec was calling its iterator', e, null, ChainRec$interpret));
         return;
       }
 

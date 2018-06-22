@@ -1,4 +1,4 @@
-import {show} from './fn';
+import {show, noop} from './fn';
 import {ordinal, namespace, name, version} from './const';
 import type from 'sanctuary-type-identifiers';
 
@@ -58,17 +58,50 @@ function indent(s){
   return '  ' + s;
 }
 
+export var captureStackTrace = Error.captureStackTrace || noop;
+
+export function prepareRawStacktrace(e, callsites){
+  return callsites;
+}
+
+export function getStacktrace(e){
+  var prepareStackTrace = Error.prepareStackTrace;
+  Error.prepareStackTrace = prepareRawStacktrace;
+  var callsites = e.stack;
+  Error.prepareStackTrace = prepareStackTrace;
+  return callsites;
+}
+
+var help =
+  '\n\n  Woah. That is quite the error message you got there!' +
+  '\n  The most useful information is on top. Happy debugging!\n';
+
+export function stripHelp(s){
+  return s.replace(help, '');
+}
+
+export function addHelp(s){
+  return s.split('\n').length < 20 ? s : s + help;
+}
+
 export function someError(action, e, s){
-  var context = typeof s === 'string' ? '\n\n  In: ' + s : '';
+  var context = typeof s === 'string' ? ':\n\n' + s.trim().split('\n').map(indent).join('\n') : '';
   try{
-    var name = e && e.name ? String(e.name) : 'An error';
-    var errorMessage = (
+    var trace = (getStacktrace(e) || [])
+    .filter(s => !s.isNative() && s.getFileName() && s.getLineNumber() && s.getColumnNumber())
+    .slice(0, 3)
+    .map(s => '\n  at ' + s.getFileName() + ':' + s.getLineNumber() + ':' + s.getColumnNumber())
+    .join('');
+    var errorMessage = stripHelp(
       e && e.message ? String(e.message) :
       e && typeof e.toString === 'function' ? e.toString() :
       String(e)
     );
-    var message = errorMessage.trim().split('\n').map(indent).join('\n');
-    return error(name + ' came up while ' + action + ':\n' + message + context + '\n');
+    var message = errorMessage + '\n\nwhile ' + action + trace + context;
+    var o = error(addHelp(message));
+    o.name = e && e.name ? String(e.name) : 'Error';
+    captureStackTrace(o, someError);
+    return o;
   }catch(_){
     return error('Something came up while ' + action + ', ' +
                  'but it could not be converted to string' + context + '\n');

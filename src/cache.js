@@ -71,7 +71,10 @@ Cached.prototype._drainQueue = function Cached$drainQueue(){
 
 Cached.prototype.crash = function Cached$crash(error){
   if(this._state > Pending) return;
-  this._value = someError('Future.cache was running the cached Future', error, show(this._pure));
+  this._value = someError(
+    'Future.cache was running the cached Future',
+    error, show(this._pure), Cached.prototype._interpret
+  );
   this._state = Crashed;
   this._drainQueue();
 };

@@ -33,23 +33,27 @@ Go.prototype = Object.create(Core);
 Go.prototype._interpret = function Go$interpret(rec, rej, res){
 
   var timing = Undetermined, cancel = noop, state, value, iterator;
+  var generator = this._generator;
 
   try{
-    iterator = this._generator();
+    iterator = generator();
   }catch(e){
-    rec(someError('Future.do was spawning an iterator', e, showf(this._generator)));
+    rec(someError('Future.do was spawning an iterator', e, showf(generator), Go$interpret));
     return noop;
   }
 
   if(!isIterator(iterator)){
     rec(someError('Future.do about to consume the created iterator', invalidArgument(
       'Future.do', 0, 'return an iterator, maybe you forgot the "*"', iterator
-    )));
+    ), null, Go$interpret));
     return noop;
   }
 
   function exception(e){
-    rec(someError('Future.do was consuming a generated Future', e, state.value.toString()));
+    rec(someError(
+      'Future.do was consuming a generated Future',
+      e, state.value.toString(), Go$interpret
+    ));
   }
 
   function resolved(x){
@@ -59,28 +63,28 @@ Go.prototype._interpret = function Go$interpret(rec, rej, res){
   }
 
   function drain(){
-    //eslint-disable-next-line no-constant-condition
-    while(true){
-      try{
+    try{
+      //eslint-disable-next-line no-constant-condition
+      while(true){
         state = iterator.next(value);
-      }catch(e){
-        return rec(someError(
-          'Future.do was passing control to the iterator',
-          e, showf(iterator.next)
+        if(!isIteration(state)) return rec(someError(
+          'Future.do was obtaining the next Future',
+          invalidIteration(state), null, Go$interpret
         ));
+        if(state.done) break;
+        if(!isFuture(state.value)) return rec(someError(
+          'Future.do was about to consume the next Future',
+          invalidState(state.value), null, Go$interpret
+        ));
+        timing = Undetermined;
+        cancel = state.value._interpret(exception, rej, resolved);
+        if(timing === Undetermined) return timing = Asynchronous;
       }
-      if(!isIteration(state)) return rec(someError(
-        'Future.do was obtaining the next Future',
-        invalidIteration(state)
+    }catch(e){
+      return rec(someError(
+        'Future.do was passing control to the iterator',
+        e, showf(generator), Go$interpret
       ));
-      if(state.done) break;
-      if(!isFuture(state.value)) return rec(someError(
-        'Future.do was about to consume the next Future',
-        invalidState(state.value)
-      ));
-      timing = Undetermined;
-      cancel = state.value._interpret(exception, rej, resolved);
-      if(timing === Undetermined) return timing = Asynchronous;
     }
     res(state.value);
   }

@@ -26,11 +26,14 @@ EncaseP2.prototype._interpret = function EncaseP2$interpret(rec, rej, res){
   try{
     p = fn(a, b);
   }catch(e){
-    rec(someError('Future.encaseP2 was generating its Promise', e));
+    rec(someError('Future.encaseP2 was generating its Promise', e, null, EncaseP2$interpret));
     return noop;
   }
   if(!isThenable(p)){
-    rec(someError('Future.encaseP2 was generating its Promise', invalidPromise(p, fn, a, b)));
+    rec(someError(
+      'Future.encaseP2 was generating its Promise',
+      invalidPromise(p, fn, a, b), null, EncaseP2$interpret
+    ));
     return noop;
   }
   p.then(function EncaseP2$res(x){

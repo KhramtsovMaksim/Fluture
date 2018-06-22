@@ -99,7 +99,7 @@ export default function interpretSequence(seq, rec, rej, res){
   //This function is called when an exception is caught.
   function exception(e){
     Sequence$cancel();
-    rec(someError('interpreting a Future', e, seq.toString()));
+    rec(someError('interpreting a Future', e, seq.toString(), interpretSequence));
   }
 
   //This function serves to kickstart concurrent computations.

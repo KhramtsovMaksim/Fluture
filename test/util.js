@@ -140,3 +140,11 @@ export var onceOrError = function (f){
     f.apply(null, arguments);
   };
 };
+
+export var stripStacktraces = function (s){
+  return s.replace(/\n *at [/][^\s]+/gm, '');
+};
+
+export var eeq = function (e, s){
+  return eq(stripStacktraces(e.message), s);
+};

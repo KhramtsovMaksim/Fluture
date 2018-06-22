@@ -1,4 +1,4 @@
-import {eq} from './util';
+import {eq, eeq} from './util';
 import {namespace, name, version} from '../src/internal/const';
 import {
   error,
@@ -129,15 +129,16 @@ describe('error', function (){
   describe('someError', function (){
 
     it('produces an error', function (){
-      eq(someError('testing', new Error('It broke')), new Error('Error came up while testing:\n  It broke\n'));
-      eq(someError('testing', new TypeError('It broke')), new Error('TypeError came up while testing:\n  It broke\n'));
+      eq(someError('testing', new Error('It broke')) instanceof Error, true);
 
-      eq(someError('testing', 'It broke'), new Error('An error came up while testing:\n  It broke\n'));
-      eq(someError('testing', 'It broke'), new Error('An error came up while testing:\n  It broke\n'));
+      eq(someError('testing', new Error('It broke')).name, 'Error');
+      eq(someError('testing', new TypeError('It broke')).name, 'TypeError');
 
-      eq(someError('testing', {toString: false}), new Error('Something came up while testing, but it could not be converted to string\n'));
+      eeq(someError('testing', new Error('It broke')), 'It broke\n\nwhile testing');
 
-      eq(someError('testing', 'It broke', 'the hood'), new Error('An error came up while testing:\n  It broke\n\n  In: the hood\n'));
+      eeq(someError('testing', 'It broke'), 'It broke\n\nwhile testing');
+      eeq(someError('testing', {toString: false}), 'Something came up while testing, but it could not be converted to string\n');
+      eeq(someError('testing', 'It broke', 'extra'), 'It broke\n\nwhile testing:\n\n  extra');
     });
 
   });

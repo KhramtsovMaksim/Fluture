@@ -31,9 +31,10 @@ Parallel.prototype._interpret = function Parallel$interpret(rec, rej, res){
       Parallel$cancel();
       rec(someError(
         'Future.parallel was running ' +
-        (ordinal[idx] ? 'the ' + ordinal[idx] + ' future' : 'future ' + (idx + 1)),
+        (ordinal[idx] ? 'its ' + ordinal[idx] + ' Future' : 'Future ' + (idx + 1)),
         e,
-        _futures[idx].toString()
+        null,
+        Parallel$interpret
       ));
     }, function Parallel$rej(reason){
       cancels[idx] = noop;
